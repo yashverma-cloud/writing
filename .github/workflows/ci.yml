@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: ['main']
+  # A run on main saves the image cache that every pull request can restore;
+  # a pull request's own cache is visible only to that pull request.
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          # Astro needs a recent 22.x; the runner's cached Node can lag behind.
+          check-latest: true
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # Astro keeps every encoded image in node_modules/.astro, keyed on the source file and its
+      # transform, so a restored cache only skips re-encoding; the output is the same. Restored
+      # after npm ci, which clears node_modules.
+      - name: Cache encoded images
+        uses: actions/cache@v6
+        with:
+          path: node_modules/.astro
+          key: astro-images-${{ hashFiles('src/assets/**', 'astro.config.mjs', 'package-lock.json') }}
+          restore-keys: astro-images-
+
+      - name: Build
+        run: npm run build
+
+      # Pinned here rather than added to package.json: it is a CI-only auditing tool
+      # whose transitive tree carries advisories that would otherwise sit in our
+      # lockfile and `npm audit` forever, for no benefit to the shipped site.
+      # lighthouserc.json lists its pages explicitly, because autodiscovery stops at the
+      # first five HTML files it finds. It also blocks GA4's collect endpoints, so audits
+      # never record visits in the site's analytics; gtag.js itself still loads and is measured.
+      - name: Lighthouse CI
+        run: npx --yes @lhci/cli@0.15.1 autorun
+        env:
+          # Performance is a warning only: runner timings vary. Verify it on a real phone.
+          LHCI_BUILD_CONTEXT__CURRENT_BRANCH: ${{ github.head_ref }}
