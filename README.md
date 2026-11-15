@@ -25,6 +25,7 @@ One Markdown file per post in `src/content/writing/`. The filename is the URL:
 The rules for a post file (frontmatter, body, content rules) are in
 `src/content/writing/_contract.md`. A published entry gets a page, an Open Graph card,
 `BlogPosting` data, a sitemap entry and a listing row.
+The image spec for the LinkedIn post that goes with a note is in `docs/post-images.md`.
 
 ## Layout
 
