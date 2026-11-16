@@ -33,6 +33,8 @@ The filename is the URL: `karpenter-cold-starts.md` → `https://writing.yashver
 free to change before the link is shared anywhere and expensive after, because the platforms cache
 what they scrape.
 
+A LinkedIn post drafted from a note gets its image from `docs/post-images.md`.
+
 ## Body
 
 Markdown only. The template styles `h2`, `h3`, paragraphs, `ul`/`ol`, `blockquote`, `hr`, links,
